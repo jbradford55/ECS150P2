@@ -117,13 +117,9 @@ int queue_iterate(queue_t queue, queue_func_t func)
 
     struct node *current = queue->head;
     while (current != NULL) {
-        printf("starting\n");
         int *a = (int*)(current->data);
-        printf("number: %d\n", *a);
         (*func)(queue, current->data);
-        printf("%d\n", queue_length(queue));
         current = current->next;
-        printf("onto the next\n");
     }
 
     return 0;
