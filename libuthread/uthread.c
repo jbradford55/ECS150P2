@@ -147,12 +147,27 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 void uthread_block(void)
 {
-	/* Phase 3: Block the currently running thread */
+    //enqueue current thread in blocked queue
+    queue_enqueue(blocked_queue, running_thread);
+
+
+    //initialize next thread to run
+	struct uthread_tcb *next_thread = malloc(sizeof(struct uthread_tcb*));
+	queue_dequeue(thread_queue, (void**)&next_thread);
+	struct uthread_tcb *old_thread = running_thread;
+	running_thread = next_thread;//update current thread
+
+
+
+    //run next thread
+	uthread_ctx_switch(old_thread->context, running_thread->context);
 
 }
 
 void uthread_unblock(struct uthread_tcb *uthread)
 {
-	/* Phase 3: Unblock the specified thread */
+    //delete *uthread from blocked queue
+    queue_delete(blocked_queue, &uthread);
+    queue_enqueue(thread_queue, (void**)uthread);
 
 }
