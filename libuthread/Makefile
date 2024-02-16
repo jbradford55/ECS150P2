@@ -30,10 +30,11 @@ libuthread.a: $(objs)
 ## generate any object files using the corresponding .c files
 %.o: %.c
 	@echo "CC $@"
-	$(Q)$(CC) $(CFlags) -O -c $@ $<
+	$(Q)$(CC) $(CFlags)  -O  -c $@ $<
 
 ## remove libuthread.a, & all objects and dependencides
 clean: 
+	@echo "Clean"
 	$(Q)rm -f $(lib) $(objs) $(deps)
 
 
