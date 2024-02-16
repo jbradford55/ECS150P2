@@ -9,12 +9,15 @@
 #include "private.h"
 #include "uthread.h"
 
-
+//preempt_enabled tells is whether or not we do anything
 static int preempt_enabled;
 
+//timer
 static struct itimerval current_timer; 
 static struct itimerval previous_timer;
 
+
+//action and sigsets
 static struct sigaction sig_action;
 static struct sigaction previous_sig_action;
 static sigset_t sig_set;
@@ -43,7 +46,6 @@ void preempt_disable(void)
 	} else {
 		return;
 	}
-	/* TODO Phase 4 */
 }
 
 void preempt_enable(void)
@@ -53,7 +55,6 @@ void preempt_enable(void)
 	} else {
 		return;
 	}
-	/* TODO Phase 4 */
 }
 
 void preempt_start(bool preempt)
@@ -64,6 +65,7 @@ void preempt_start(bool preempt)
 		return;
 	}
 
+	//initialize timer
 	current_timer.it_interval.tv_usec = 10000; //10,000 = 1,000,000 milliseconds * 1/100 times per second = 10,000
 	current_timer.it_value.tv_usec = 10000;
 	setitimer(ITIMER_VIRTUAL, &current_timer, &previous_timer);
@@ -71,27 +73,25 @@ void preempt_start(bool preempt)
 
 
 
-
+	//initialize sigset
 	sigemptyset(&sig_set);
 	sigaddset(&sig_set, SIGVTALRM);
 
-
+	//set appropriate handlers
 	sig_action.sa_handler = signal_handler;
 	sigemptyset(&sig_action.sa_mask);
 	sig_action.sa_flags = 0;
 
 
-
+	//NOTE: we save state to be restored later
 	sigaction(SIGVTALRM, &sig_action, &previous_sig_action);
 	sigprocmask(SIG_SETMASK, NULL, &previous_sig_set);
 
 	return;
-	/* TODO Phase 4 */
 }
 
 void preempt_stop(void)
 {
-	/* TODO Phase 4 */
 	if (preempt_enabled==1){
 		setitimer(SIGVTALRM, &previous_timer, NULL);
 		sigaction(SIGVTALRM, &previous_sig_action, NULL);
