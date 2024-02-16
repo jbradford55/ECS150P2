@@ -1,7 +1,6 @@
 # Target programs
 programs := \
 	queue_tester_example.x \
-	queue_tester_temp.x \
 	uthread_hello.x \
 	uthread_yield.x \
 
