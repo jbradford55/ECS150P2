@@ -64,7 +64,7 @@ void preempt_start(bool preempt)
 		return;
 	}
 
-	current_timer.it_interval.tv_usec = 10000;
+	current_timer.it_interval.tv_usec = 10000; //10,000 = 1,000,000 milliseconds * 1/100 times per second = 10,000
 	current_timer.it_value.tv_usec = 10000;
 	setitimer(ITIMER_VIRTUAL, &current_timer, &previous_timer);
 
