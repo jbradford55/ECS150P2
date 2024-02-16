@@ -117,7 +117,6 @@ int queue_iterate(queue_t queue, queue_func_t func)
 
     struct node *current = queue->head;
     while (current != NULL) {
-        int *a = (int*)(current->data);
         (*func)(queue, current->data);
         current = current->next;
     }
