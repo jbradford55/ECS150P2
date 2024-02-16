@@ -23,7 +23,6 @@ struct uthread_tcb {
 //this is the main running thread
 static struct uthread_tcb *running_thread;
 
-
 //Used to assign each thread a ThreadID(equal to number of threads at that point)
 static int number_of_threads; 
 
@@ -93,13 +92,9 @@ int uthread_create(uthread_func_t func, void *arg)
         return -1; // Memory allocation failed
     }
 
-    // new_thread->stack = malloc(sizeof())
-    // if (new_thread->stack == NULL) {
-    //     free(new_thread);
-    //     return -1; // Stack allocation failed
-    // }
 
     preempt_disable();
+    //initialize new thread
     number_of_threads++;
     new_thread->stack = uthread_ctx_alloc_stack();
     new_thread->context = malloc(sizeof(uthread_ctx_t));
@@ -128,7 +123,8 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
 
     preempt_start(preempt);
-	/* Phase 2: Initialize the thread queue and start preemption */
+
+
     thread_queue = queue_create();
     if (thread_queue == NULL) {
         return -1; // Queue creation failed
