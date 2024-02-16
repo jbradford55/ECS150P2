@@ -9,11 +9,9 @@
 #include "private.h"
 #include "uthread.h"
 
-/*
- * Frequency of preemption
- * 100Hz is 100 times per second
- */
-#define HZ 100
+
+static int preempt_enabled;
+
 static struct itimerval current_timer; 
 static struct itimerval previous_timer;
 
@@ -23,7 +21,15 @@ static sigset_t sig_set;
 static sigset_t previous_sig_set;
 
 
-static int preempt_enabled;
+
+
+
+/*
+ * Frequency of preemption
+ * 100Hz is 100 times per second
+ */
+#define HZ 100
+
 
 void signal_handler(int input_signal){
 	if (input_signal == SIGVTALRM){
