@@ -57,21 +57,28 @@ void uthread_exit(void)
         //very similar to uthread_yield, but we don't re-enqueue running thread and we
         //destroy stac pointer
         //initialize new thread
+
+        preempt_disable();
         struct uthread_tcb *next_thread;
         next_thread = malloc(sizeof(struct uthread_tcb*));
         queue_dequeue(thread_queue, (void**)&next_thread);
 
         //destroy stack of old thread
-        //uthread_ctx_destroy_stack(running_thread->stack);
+        uthread_ctx_destroy_stack(running_thread->stack);
 
 
         //switch from current thread to next thread
         struct uthread_tcb *old_running_thread = running_thread;
         running_thread = next_thread;
+
+        preempt_disable();
+
+
         if (old_running_thread->context && running_thread->context){
             uthread_ctx_switch(old_running_thread->context, running_thread->context);
         }
 	} else {
+        preempt_stop();
         return;
     }
 
@@ -91,6 +98,8 @@ int uthread_create(uthread_func_t func, void *arg)
     //     free(new_thread);
     //     return -1; // Stack allocation failed
     // }
+
+    preempt_disable();
     number_of_threads++;
     new_thread->stack = uthread_ctx_alloc_stack();
     new_thread->context = malloc(sizeof(uthread_ctx_t));
@@ -105,8 +114,12 @@ int uthread_create(uthread_func_t func, void *arg)
         return -1; 
     }
 
+
     // Add the new thread to the queue
     queue_enqueue(thread_queue, new_thread);
+
+
+    preempt_enable();
 
     return 0; // Success
 }
@@ -114,13 +127,14 @@ int uthread_create(uthread_func_t func, void *arg)
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
 
+    preempt_start(preempt);
 	/* Phase 2: Initialize the thread queue and start preemption */
     thread_queue = queue_create();
     if (thread_queue == NULL) {
         return -1; // Queue creation failed
     }
 
-
+    preempt_disable();
     //create main thread
     struct uthread_tcb *main_thread = malloc(sizeof(struct uthread_tcb*));
     main_thread->stack = uthread_ctx_alloc_stack();
@@ -132,6 +146,8 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
         queue_destroy(thread_queue);
         return -1; // Initial thread creation failed
     }
+
+    preempt_enable();
 
     // Start executing threads
     while (1) {
@@ -150,6 +166,7 @@ void uthread_block(void)
     //enqueue current thread in blocked queue
     queue_enqueue(blocked_queue, running_thread);
 
+    preempt_disable();
 
     //initialize next thread to run
 	struct uthread_tcb *next_thread = malloc(sizeof(struct uthread_tcb*));
@@ -158,6 +175,7 @@ void uthread_block(void)
 	running_thread = next_thread;//update current thread
 
 
+    preempt_enable();
 
     //run next thread
 	uthread_ctx_switch(old_thread->context, running_thread->context);
